@@ -25,7 +25,14 @@ def collision(player , obstacles):
         for obstacles_rect in obstacles:
             if player.colliderect(obstacles_rect): return False
     return True
-
+def player_animation():
+    global player_surf , player_index
+    if player_play_rect.bottom < 470:
+        player_surf = player_jump
+    else:
+        player_index += 0.1
+        if player_index >= len(player_walk) : player_index =0
+        player_surf = player_walk[int(player_index)]
 
 pygame.init()  # insilites the pygame
 screen = pygame.display.set_mode((800,600)) #screen = pygame.display.set_mode((weidth,height))
@@ -48,15 +55,37 @@ text_font = pygame.font.Font( "font/Pixeltype.ttf", 50) # 2 argunments (font typ
 
 
 #obstacles
-snail_surafce = pygame.image.load("graphics/snail/snail1.png").convert_alpha()
+#snail
+#snail_surafce = pygame.image.load("graphics/snail/snail1.png").convert_alpha()
 # snail_rect = snail_surafce.get_rect(midbottom = (0 , 470))
+snail_frame_1 = pygame.image.load("graphics/snail/snail1.png").convert_alpha()
+snail_frame_2 = pygame.image.load("graphics/snail/snail2.png").convert_alpha()
+snail_frames = [snail_frame_1 , snail_frame_2]
+snail_frame_index = 0
+snail_surafce = snail_frames[snail_frame_index]
 
-fly_surf = pygame.image.load("graphics/Fly/Fly1.png").convert_alpha()
+#fly
+#fly_surf = pygame.image.load("graphics/Fly/Fly1.png").convert_alpha()
+fly_frame_1 = pygame.image.load("graphics/Fly/Fly1.png").convert_alpha()
+fly_frame_2 = pygame.image.load("graphics/Fly/Fly2.png").convert_alpha()
+fly_frames = [fly_frame_1 , fly_frame_2]
+fly_frame_index = 0
+fly_surf = fly_frames[fly_frame_index]
+
+
+
+
+
 #add player
-palyer_surf = pygame.image.load("graphics/Player/player_stand.png").convert_alpha()
-player_play_rect = palyer_surf.get_rect(midbottom = (100,470))
-palyer_surf_2x = pygame.transform.rotozoom(palyer_surf,0,3)
-player_stand_rect = palyer_surf_2x.get_rect(center=(400 , 250))
+player_walk1 = pygame.image.load("graphics/Player/player_walk_1.png").convert_alpha()
+player_walk2 = pygame.image.load("graphics/Player/player_walk_2.png").convert_alpha()
+player_jump = pygame.image.load("graphics/Player/jump.png").convert_alpha()
+player_walk = [player_walk1 , player_walk2]
+player_index = 0
+player_surf = player_walk[player_index]
+player_play_rect = player_surf.get_rect(midbottom = (100,470))
+player_surf_2x = pygame.transform.rotozoom(player_surf,0,3)
+player_stand_rect = player_surf_2x.get_rect(center=(400 , 250))
 player_gr = 0
 
 #restsrt screen
@@ -71,6 +100,12 @@ final_score = 0
 # Timer
 obstacles_timer = pygame.USEREVENT +1
 pygame.time.set_timer(obstacles_timer,1300)
+
+snail_anumation_timer = pygame.USEREVENT +2
+pygame.time.set_timer(snail_anumation_timer,300)
+
+fly_anumation_timer = pygame.USEREVENT +3
+pygame.time.set_timer(fly_anumation_timer,100)
 
 obstacles_rect_list = []
 
@@ -97,7 +132,14 @@ while True:
                     obstacles_rect_list.append(snail_surafce.get_rect(midbottom = (randint(900,1100) , 470)))
                 else:
                     obstacles_rect_list.append(fly_surf.get_rect(midbottom = (randint(900,1100), 370)))
-                    
+            if event.type == snail_anumation_timer:
+                if snail_frame_index == 0 : snail_frame_index =1
+                else : snail_frame_index =0  
+                snail_surafce = snail_frames[snail_frame_index]
+            if event.type ==  fly_anumation_timer :
+                if fly_frame_index==0: fly_frame_index=1
+                else: fly_frame_index=0
+                fly_surf = fly_frames[fly_frame_index]
         else:
             if event.type == pygame.KEYDOWN and event.key==pygame.K_SPACE :
                 game_active = True
@@ -116,11 +158,13 @@ while True:
         
         #PLayer
         player_gr +=1
-        screen.blit(palyer_surf,player_play_rect)
+        
         #player_play_rect.right +=1
         player_play_rect.y += player_gr
         if player_play_rect.bottom >=470 :
             player_play_rect.bottom = 470
+        player_animation()
+        screen.blit(player_surf,player_play_rect)
         
         # keys  = pygame.key.get_pressed()
         # if keys[pygame.K_SPACE]:
@@ -142,7 +186,7 @@ while True:
         player_play_rect.midbottom = (100,470)
         player_gr = 0
         screen.blit(game_title , game_title_rect)
-        screen.blit(palyer_surf_2x,player_stand_rect)
+        screen.blit(player_surf_2x,player_stand_rect)
         screen.blit(restart_text,restart_text_rect)
         final_score_text = text_font.render(f"{final_score}",False ,"#599D87")
         final_score_text_rect = final_score_text.get_rect(center=(400,500 ))
